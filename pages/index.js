@@ -1,65 +1,73 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Axios from "axios"
+import Head from "next/head"
+import Image from "next/image"
+import Link from "next/link"
+import { Fragment } from "react"
+import MovieCard from "../components/MovieCard"
+import Search from "../components/Search"
 
-export default function Home() {
+export default function Home({ movies }) {
+  console.log(movies)
+
+  // const showTrending =  () => {
+
+  //   const res =
+
+  // }
+
   return (
-    <div className={styles.container}>
+    <Fragment>
       <Head>
-        <title>Create Next App</title>
+        <title>LMDB</title>
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+      <div className="flex flex-col justify-center mx-3">
+        <div className="flex items-center content-start justify-between mx-4">
+          <h1 className="my-3 font-bold ">LMDB</h1>
+          <Link href={`/watchlist`}>+Watchlist</Link>
         </div>
-      </main>
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
+        <Search />
+        {/* <button onClick={showTrending}>Trending</button> */}
+        <div className="">
+          {movies.results?.map((result) => (
+            <MovieCard
+              key={result.id}
+              id={result.id}
+              title={result.title}
+              image={result.poster_path}
+              tagline={result.tagline}
+              overview={result.overview}
+              date={result.release_date}
+              rating={result.vote_average}
+            />
+          ))}
+        </div>
+      </div>
+    </Fragment>
   )
+}
+
+export async function getStaticProps() {
+  const res = await fetch(
+    `
+    https://api.themoviedb.org/3/movie/popular?api_key=${process.env.API_KEY}&language=en-US&page=1`
+  )
+  const movies = await res.json()
+
+  if (!movies) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      movies,
+    }, // will be passed to the page component as props
+  }
 }
